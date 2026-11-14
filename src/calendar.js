@@ -951,31 +951,25 @@ function renderFilteredBookingsList() {
         : 'TBD';
 
       return `
-        <div class="ledger-row-card ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${safeId}">
+        <div class="ledger-row-card ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${safeId}" title="Booking #${safeId}${submittedAt ? ` • Submitted ${escapeHtml(submittedAt)}` : ''}">
           <div class="ledger-col-main">
             <div class="ledger-row-head">
               <span class="ledger-customer-name">${escapeHtml(b.name || 'Customer')}</span>
               ${isNewBooking ? '<span class="admin-badge-new-booking">NEW</span>' : ''}
-              <span class="ledger-ref-code">#${safeId || 'REF'}</span>
             </div>
             <div class="ledger-meta-line">
               <span>${escapeHtml(formattedEventDate)}${deliveryTime ? ` • ${escapeHtml(deliveryTime)}` : ''}</span>
-              ${submittedAt ? `<span class="ledger-dot">&middot;</span><span class="ledger-muted">Sent ${escapeHtml(submittedAt)}</span>` : ''}
             </div>
             <div class="ledger-contact-line">
               ${b.phone ? `<a href="tel:${safeTelHref}" class="ledger-link">${escapeHtml(b.phone)}</a>` : ''}
-              ${fbName ? `<span class="ledger-dot">&middot;</span><a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="ledger-link">FB: ${escapeHtml(fbName)}</a>` : ''}
+              ${fbName ? `<span class="ledger-dot">&middot;</span><a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="ledger-link">${escapeHtml(fbName)}</a>` : ''}
             </div>
           </div>
 
           <div class="ledger-col-pkg">
-            <div class="ledger-pkg-name">${escapeHtml(pkgLabel)}</div>
+            <div class="ledger-pkg-name">${escapeHtml(pkgLabel)} <span class="ledger-muted">&middot;</span> ${pkgRate}</div>
             <div class="ledger-price-line">
-              <span>Total ${pkgRate}</span>
-              <span class="ledger-dot">&middot;</span>
-              <span class="ledger-muted">Deposit ${depositRate}</span>
-              <span class="ledger-dot">&middot;</span>
-              <span class="ledger-muted">Bal ${balanceRate}</span>
+              <span class="ledger-muted">Bal on delivery: ${balanceRate}</span>
             </div>
             <div class="ledger-venue-line">
               <span class="ledger-venue-text">${escapeHtml(b.address || 'Lapu-Lapu City')}</span>
@@ -988,14 +982,17 @@ function renderFilteredBookingsList() {
               <span class="status-indicator"></span>
               <span>${escapeHtml(st.label)}</span>
             </span>
-            ${
-              safeProofUrl
-                ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="ledger-proof-chip" title="View GCash Screenshot">
-                     <img src="${escapeHtml(safeProofUrl)}" alt="Proof #${safeId}" loading="lazy">
-                     <span>${refNo ? `Ref #${escapeHtml(refNo)}` : 'View Proof'} ↗</span>
-                   </a>`
-                : `<span class="ledger-no-proof">${refNo ? `GCash Ref #${escapeHtml(refNo)}` : 'No proof image'}</span>`
-            }
+            <div class="ledger-proof-row">
+              ${refNo ? `<span class="ledger-ref-pill">GCash &bull;&bull;&bull;&bull; ${escapeHtml(refNo)}</span>` : ''}
+              ${
+                safeProofUrl
+                  ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="ledger-proof-chip" title="Open full GCash screenshot">
+                       <img src="${escapeHtml(safeProofUrl)}" alt="Proof #${safeId}" loading="lazy">
+                       <span>Proof ↗</span>
+                     </a>`
+                  : ''
+              }
+            </div>
           </div>
 
           <div class="ledger-col-actions">
