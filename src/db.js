@@ -43,6 +43,33 @@ export async function getBookingsFromDB() {
   return data || [];
 }
 
+// 1.5 Upload GCash payment proof screenshot to Supabase Storage
+export async function uploadPaymentProof(file, bookingId) {
+  const supabase = getSupabase();
+  if (!supabase || !file) return null;
+
+  const rawExt = (file.name || '').split('.').pop()?.toLowerCase() || 'jpg';
+  const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+  const safeId = String(bookingId || 'KS').replace(/[^A-Za-z0-9_-]/g, '');
+  const path = `${safeId}-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('payment-proofs')
+    .upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || 'image/jpeg'
+    });
+
+  if (uploadError) {
+    console.warn('[K-SoundRentals] Could not upload payment proof to Storage:', uploadError.message);
+    return null;
+  }
+
+  const { data } = supabase.storage.from('payment-proofs').getPublicUrl(path);
+  return data?.publicUrl || null;
+}
+
 // 2. Insert booking atomically into Supabase (with fallback if RPC is not yet deployed)
 export async function saveBookingToDB(bookingData) {
   const supabase = getSupabase();
@@ -61,6 +88,7 @@ export async function saveBookingToDB(bookingData) {
     payment_type: bookingData.paymentTypeLabel,
     amount_due: bookingData.amountDue,
     reference_no: bookingData.referenceNo || null,
+    proof_url: bookingData.proofUrl || null,
     status: 'pending_deposit'
   };
 
@@ -86,7 +114,8 @@ export async function saveBookingToDB(bookingData) {
     p_payment_channel: payload.payment_channel || '',
     p_payment_type: payload.payment_type || '',
     p_amount_due: payload.amount_due ?? 500,
-    p_reference_no: payload.reference_no || ''
+    p_reference_no: payload.reference_no || '',
+    p_proof_url: payload.proof_url || ''
   });
 
   if (!rpcRes.error) {
@@ -111,8 +140,9 @@ export async function saveBookingToDB(bookingData) {
     .from('bookings')
     .insert([payload]);
 
-  if (error && error.message && error.message.includes('fb_name')) {
-    delete payload.fb_name;
+  if (error && error.message && (error.message.includes('fb_name') || error.message.includes('proof_url'))) {
+    if (error.message.includes('fb_name')) delete payload.fb_name;
+    if (error.message.includes('proof_url')) delete payload.proof_url;
     const retry = await supabase
       .from('bookings')
       .insert([payload]);

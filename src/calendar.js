@@ -892,6 +892,7 @@ function renderFilteredBookingsList() {
       const pkgLabel = pkg ? `${pkg.tier} (${pkg.durationTag})` : (b.packageChosen || b.package || 'Full Karaoke');
       const pkgRate = pkg ? `<span class="peso-inline">${pesoIconSvg(13)}${pkg.price.toLocaleString()}</span>` : (b.amountDue || b.amount_due ? `<span class="peso-inline">${pesoIconSvg(13)}${Number(b.amountDue || b.amount_due).toLocaleString()}</span>` : `<span class="peso-inline">${pesoIconSvg(13)}1,299</span>`);
       const safeMapUrl = sanitizeHttpUrl(b.map_link || b.mapLink || b.map_url || b.mapUrl, '');
+      const safeProofUrl = sanitizeHttpUrl(b.proof_url || b.proofUrl, '');
       const fbName = b.fb_name || b.fbName;
       const deliveryTime = b.delivery_time || b.deliveryTime || '';
       const refNo = b.reference_no || b.referenceNo || '';
@@ -943,7 +944,8 @@ function renderFilteredBookingsList() {
           <div class="admin-pkg-badge-strip">
             <span class="admin-pkg-title">${escapeHtml(pkgLabel)}</span>
             <span class="admin-rate-tag">Rate: ${pkgRate}</span>
-            ${refNo ? `<span class="admin-rate-tag">Deposit Ref: ${escapeHtml(refNo)}</span>` : ''}
+            ${refNo ? `<span class="admin-rate-tag">Deposit Ref: #${escapeHtml(refNo)}</span>` : ''}
+            ${safeProofUrl ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="admin-pin-pill">View Proof ↗</a>` : ''}
           </div>
 
           <div class="admin-booking-venue">

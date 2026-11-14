@@ -9900,3 +9900,412 @@ summary:focus-visible,
     background: rgba(239, 68, 68, 0.16);
     border-color: #ef4444;
 }
+
+
+/* ===================================================
+   6-STEP TERMS, GCASH QR & PAYMENT PROOF WIZARD
+   =================================================== */
+.booking-breadcrumbs {
+  flex-wrap: wrap;
+  gap: 6px 4px;
+}
+
+.wizard-alert-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.wizard-alert-banner svg {
+  flex-shrink: 0;
+  color: #fbbf24;
+}
+
+.wizard-alert-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.hold-timer-badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fef3c7;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.terms-header-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.terms-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 107, 0, 0.14);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  color: var(--orange, #ff6b00);
+  flex-shrink: 0;
+}
+
+.terms-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.terms-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.terms-scroll-box {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(15, 17, 23, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.terms-scroll-box h4 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 0.96rem;
+}
+
+.terms-scroll-box p {
+  margin: 0 0 10px;
+}
+
+.terms-scroll-box p:last-child {
+  margin-bottom: 0;
+}
+
+.terms-checkbox-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.terms-check-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.terms-check-card:hover {
+  border-color: rgba(255, 107, 0, 0.45);
+  background: rgba(255, 107, 0, 0.06);
+}
+
+.terms-check-card input[type="checkbox"] {
+  margin-top: 2px;
+  width: 17px;
+  height: 17px;
+  accent-color: #22c55e;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.gcash-pay-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(0, 125, 254, 0.14), rgba(15, 17, 23, 0.85));
+  border: 1px solid rgba(0, 125, 254, 0.35);
+}
+
+.gcash-qr-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.gcash-qr-img {
+  width: 190px;
+  max-width: 100%;
+  border-radius: 14px;
+  border: 3px solid #fff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.gcash-qr-zoom-hint {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.gcash-acct-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gcash-meta-lbl {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gcash-meta-name {
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.gcash-meta-num-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.gcash-meta-num {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 0.03em;
+}
+
+.gcash-channel-tag {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #60a5fa;
+}
+
+.gcash-amount-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gcash-due-amount {
+  font-size: 1.15rem;
+  color: #4ade80;
+}
+
+.gcash-ref-input {
+  text-align: center;
+  font-size: 1.25rem !important;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  font-variant-numeric: tabular-nums;
+}
+
+.proof-info-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fde68a;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.proof-info-warn svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #fbbf24;
+}
+
+.proof-upload-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 14px;
+  border: 2px dashed rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.proof-upload-dropzone:hover {
+  border-color: var(--orange, #ff6b00);
+  background: rgba(255, 107, 0, 0.06);
+}
+
+.proof-drop-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.proof-drop-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.proof-drop-preview img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.proof-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  min-width: 0;
+}
+
+.proof-preview-meta strong {
+  font-size: 0.86rem;
+  color: #86efac;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proof-preview-meta span {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.proof-step-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.proof-step-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #60a5fa;
+}
+
+.review-payment-proof-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 0 14px 14px;
+}
+
+.review-proof-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-terms-ok-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.review-ref-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.review-ref-display strong {
+  color: #fff;
+  letter-spacing: 0.12em;
+}
+
+.review-proof-thumb-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.review-proof-thumb-wrap img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.review-proof-thumb-wrap small {
+  font-size: 0.7rem;
+  color: #86efac;
+}

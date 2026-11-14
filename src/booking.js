@@ -13,11 +13,15 @@ import {
   sanitizeHttpUrl
 } from './packages.js';
 import { isBlocked, blockDateLocally, syncBlockedDatesFromServer } from './calendar.js';
-import { saveBookingToDB } from './db.js';
+import { saveBookingToDB, uploadPaymentProof } from './db.js';
 
 let activePaymentChannel = 'gcash';
 let currentStep = 1;
 let maxStepUnlocked = 1;
+let selectedProofFile = null;
+let selectedProofDataUrl = '';
+let holdTimerInterval = null;
+let holdSecondsRemaining = 600;
 
 function showError(inputEl, message) {
   if (!inputEl) return;
@@ -116,6 +120,41 @@ export function updateLiveSummary() {
   if (recapVenueEl) {
     const addr = addressInput?.value?.trim() || '';
     recapVenueEl.textContent = addr || 'Lapu-Lapu City';
+  }
+
+  const nameInput = document.getElementById('input-name');
+  const phoneInput = document.getElementById('input-phone');
+  const fbInput = document.getElementById('input-fb');
+  const recapCustomerEl = document.getElementById('recap-customer');
+  if (recapCustomerEl) {
+    const cName = nameInput?.value?.trim() || '';
+    const cPhone = phoneInput?.value?.trim() || '';
+    const cFb = fbInput?.value?.trim() || '';
+    const parts = [cName, cPhone, cFb ? `FB: ${cFb}` : ''].filter(Boolean);
+    recapCustomerEl.textContent = parts.length ? parts.join(' • ') : '—';
+  }
+
+  const gcashRefInput = document.getElementById('input-gcash-ref');
+  const recapRefEl = document.getElementById('recap-gcash-ref');
+  if (recapRefEl) {
+    const refDigits = (gcashRefInput?.value || '').trim();
+    recapRefEl.textContent = refDigits || '----';
+  }
+
+  const recapProofWrap = document.getElementById('recap-proof-thumb-wrap');
+  const recapProofImg = document.getElementById('recap-proof-img');
+  if (recapProofWrap && recapProofImg) {
+    if (selectedProofDataUrl) {
+      recapProofImg.src = selectedProofDataUrl;
+      recapProofWrap.style.display = 'flex';
+    } else {
+      recapProofWrap.style.display = 'none';
+    }
+  }
+
+  const step5DepositEl = document.getElementById('step5-deposit-due');
+  if (step5DepositEl && selectedPkg) {
+    step5DepositEl.innerHTML = `${pesoIconSvg(16)}${(selectedPkg.deposit || 500).toLocaleString()}`;
   }
 
   updatePaymentQRWidget(selectedPkg);
@@ -372,6 +411,8 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
   const safeTelHref = encodeURIComponent(String(bookingData.phone || '').replace(/[^+\d]/g, ''));
   const safeFbName = escapeHtml(bookingData.fbName || '—');
   const safeAddress = escapeHtml(bookingData.address || '');
+  const safeRefNo = escapeHtml(bookingData.referenceNo || '—');
+  const safeProofUrl = sanitizeHttpUrl(bookingData.proofUrl, '');
 
   if (contentEl) {
     contentEl.innerHTML = [
@@ -379,9 +420,9 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
       '  <div class="conf-success-icon" aria-hidden="true">',
       '    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
       '  </div>',
-      '  <h3>Reservation Received</h3>',
+      '  <h3>Booking Submitted — Pending Verification</h3>',
       '  <p class="conf-subtitle">',
-      '    Your setup is on hold. Complete your <strong><span class="peso-inline">' + pesoIconSvg(13) + '500</span> GCash deposit</strong> below and message our Facebook page to lock in your date.',
+      '    Your date is reserved and your <strong><span class="peso-inline">' + pesoIconSvg(13) + depositAmt.toLocaleString() + '</span> GCash payment proof</strong> has been submitted for verification.',
       '  </p>',
       !dbSaved
         ? '  <p class="conf-subtitle" style="color:#fca5a5;margin-top:8px;">Note: Live database sync could not be confirmed. Please copy your summary below and send it to our Facebook Messenger so we can record your slot manually.</p>'
@@ -396,7 +437,7 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
       '      <strong class="ref-code">#' + safeId + '</strong>',
       '    </div>',
       '    <div class="conf-status-tag">',
-      '      <span>Awaiting <span class="peso-inline">' + pesoIconSvg(12) + depositAmt.toLocaleString() + '</span> Deposit</span>',
+      '      <span>Pending Verification • Ref #' + safeRefNo + '</span>',
       '    </div>',
       '  </div>',
       '  <!-- PACKAGE HIGHLIGHT STRIP -->',
@@ -437,6 +478,13 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
       '      </span>',
       '      <strong class="conf-cell-val">' + safeFbName + '</strong>',
       '    </div>',
+      '    <div class="conf-detail-cell">',
+      '      <span class="conf-cell-label">',
+      '        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+      '        <span>GCash Proof &amp; Balance</span>',
+      '      </span>',
+      '      <strong class="conf-cell-val">Ref #' + safeRefNo + ' &bull; Bal: <span class="peso-inline">' + pesoIconSvg(13) + balanceAmt.toLocaleString() + '</span>' + (safeProofUrl ? ' &bull; <a href="' + escapeHtml(safeProofUrl) + '" target="_blank" rel="noopener noreferrer" class="conf-tel-link">View Proof ↗</a>' : '') + '</strong>',
+      '    </div>',
       '    <div class="conf-detail-cell full-width">',
       '      <span class="conf-cell-label">',
       '        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
@@ -452,58 +500,11 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
       '    </div>',
       '  </div>',
       '</div>',
-      '<!-- ELEVATED RESERVATION DOWNPAYMENT & SETTLEMENT CARD -->',
-      '<div class="downpayment-card" style="margin: 18px 0 20px;">',
-      '  <div class="dp-card-head">',
-      '    <span class="dp-card-title">GCash Downpayment</span>',
-      '    <div class="dp-due-callout">',
-      '      <span class="dp-callout-label">Deposit Due:</span>',
-      '      <strong class="dp-callout-num peso-inline">' + pesoIconSvg(15) + depositAmt.toLocaleString() + '</strong>',
-      '    </div>',
-      '  </div>',
-      '  <div class="dp-ledger-strip">',
-      '    <div class="dp-ledger-col">',
-      '      <span class="dp-ledger-lbl">Package Total</span>',
-      '      <span class="dp-ledger-val peso-inline">' + pesoIconSvg(13) + totalPrice.toLocaleString() + '</span>',
-      '    </div>',
-      '    <div class="dp-ledger-col dp-col-deposit">',
-      '      <span class="dp-ledger-lbl">Deposit (Lock Date)</span>',
-      '      <strong class="dp-ledger-val dp-deposit-val peso-inline">' + pesoIconSvg(14) + depositAmt.toLocaleString() + '</strong>',
-      '    </div>',
-      '    <div class="dp-ledger-col">',
-      '      <span class="dp-ledger-lbl">Balance on Delivery</span>',
-      '      <span class="dp-ledger-val peso-inline">' + pesoIconSvg(13) + balanceAmt.toLocaleString() + '</span>',
-      '    </div>',
-      '  </div>',
-      '  <div class="dp-acct-box">',
-      '    <div class="dp-acct-info">',
-      '      <div class="dp-acct-main">',
-      '        <span class="dp-acct-label">Official GCash Number</span>',
-      '        <div class="dp-number-row">',
-      '          <strong class="dp-number">0995 985 9549</strong>',
-      '          <button type="button" class="btn-copy-dp" onclick="window.copyGCashNumber(this)" title="Copy GCash Number">',
-      '            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-      '            <span>Copy</span>',
-      '          </button>',
-      '        </div>',
-      '      </div>',
-      '      <span class="dp-recipient">Kyle B. &bull; K-SoundRentals</span>',
-      '    </div>',
-      '    <button type="button" class="btn-qr-view" onclick="document.getElementById(\'qr-lightbox-modal\').style.display=\'flex\'" title="View QR Voucher">',
-      '      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
-      '      <span>Scan QR</span>',
-      '    </button>',
-      '  </div>',
-      '  <div class="dp-guide-strip">',
-      '    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--orange)" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-      '    <p><span class="peso-inline">' + pesoIconSvg(13) + '500</span> downpayment locks your selected event date. Send your GCash payment screenshot to our <a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer">Facebook Messenger (m.me/KSoundRentals ↗)</a> for instant verification.</p>',
-      '  </div>',
-      '</div>',
       '<!-- PRIMARY ACTION BUTTONS -->',
-      '<div class="conf-actions-container">',
+      '<div class="conf-actions-container" style="margin-top: 18px;">',
       '  <a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-shine conf-messenger-btn">',
       '    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.914 1.454 5.518 3.734 7.202V22l3.411-1.872c.905.251 1.867.387 2.855.387 5.523 0 10-4.145 10-9.257C22 6.145 17.523 2 12 2zm1.002 12.443-2.56-2.73-4.996 2.73 5.496-5.834 2.624 2.73 4.932-2.73-5.496 5.834z"/></svg>',
-      '    <span>Open Messenger & Send Screenshot</span>',
+      '    <span>Open Messenger (For Urgent Follow-ups)</span>',
       '  </a>',
       '  <div class="conf-secondary-actions">',
       '    <a href="https://www.facebook.com/KSoundRentals" target="_blank" rel="noopener noreferrer" class="btn btn-outline conf-sub-btn">',
@@ -599,6 +600,39 @@ async function submitToWeb3Forms(bookingPayload) {
 // BREADCRUMBS STEPPER NAVIGATION & VALIDATION
 // ===================================================
 
+function updateHoldTimerDisplay() {
+  const mins = String(Math.floor(holdSecondsRemaining / 60)).padStart(2, '0');
+  const secs = String(holdSecondsRemaining % 60).padStart(2, '0');
+  const text = `${mins}:${secs}`;
+  const el1 = document.getElementById('hold-timer-display');
+  const el2 = document.getElementById('hold-timer-display-review');
+  if (el1) el1.textContent = text;
+  if (el2) el2.textContent = text;
+}
+
+function startHoldTimer() {
+  if (holdTimerInterval) return;
+  holdSecondsRemaining = 600;
+  updateHoldTimerDisplay();
+  holdTimerInterval = setInterval(() => {
+    if (holdSecondsRemaining > 0) {
+      holdSecondsRemaining -= 1;
+      updateHoldTimerDisplay();
+    } else {
+      stopHoldTimer();
+      alert('Your 10-minute checkout window expired. Please re-verify your selected date before confirming.');
+      goToStep(1);
+    }
+  }, 1000);
+}
+
+function stopHoldTimer() {
+  if (holdTimerInterval) {
+    clearInterval(holdTimerInterval);
+    holdTimerInterval = null;
+  }
+}
+
 export function validateStep(stepIndex) {
   const dateInput = document.getElementById('input-date');
   const timeSelect = document.getElementById('delivery-time');
@@ -606,6 +640,7 @@ export function validateStep(stepIndex) {
   const addressInput = document.getElementById('input-address');
   const nameInput = document.getElementById('input-name');
   const phoneInput = document.getElementById('input-phone');
+  const fbInput = document.getElementById('input-fb');
 
   if (stepIndex === 1) {
     let valid = true;
@@ -652,34 +687,61 @@ export function validateStep(stepIndex) {
   }
 
   if (stepIndex === 3) {
+    let valid = true;
     clearError(addressInput);
+    clearError(nameInput);
+    clearError(phoneInput);
+    if (fbInput) clearError(fbInput);
+
     if (!addressInput || !addressInput.value.trim()) {
       showError(addressInput, 'Enter or pin your delivery address.');
+      valid = false;
+    }
+    if (!nameInput || nameInput.value.trim().length < 2) {
+      showError(nameInput, 'Enter your full name.');
+      valid = false;
+    }
+    const phoneVal = (phoneInput?.value || '').trim().replace(/[\s-]/g, '');
+    if (!/^(09|\+639)\d{9}$/.test(phoneVal)) {
+      showError(phoneInput, 'Enter a valid 11-digit mobile number (09XXXXXXXXX).');
+      valid = false;
+    }
+    if (fbInput && fbInput.value.trim().length < 2) {
+      showError(fbInput, 'Enter your Facebook account name.');
+      valid = false;
+    }
+    return valid;
+  }
+
+  if (stepIndex === 4) {
+    const termsGroup = document.getElementById('terms-checkbox-group');
+    const c1 = document.getElementById('agree-owner-terms');
+    const c2 = document.getElementById('agree-rental-terms');
+    const c3 = document.getElementById('agree-privacy');
+    if (termsGroup) clearError(termsGroup);
+
+    if (!c1?.checked || !c2?.checked || !c3?.checked) {
+      showError(termsGroup, 'Please check all three boxes to accept the Terms & Conditions and Data Privacy Policy.');
       return false;
     }
     return true;
   }
 
-  if (stepIndex === 4) {
+  if (stepIndex === 5) {
     let valid = true;
-    const fbInput = document.getElementById('input-fb');
-    clearError(nameInput);
-    if (fbInput) clearError(fbInput);
-    clearError(phoneInput);
+    const refInput = document.getElementById('input-gcash-ref');
+    const proofDropzone = document.getElementById('proof-upload-dropzone');
+    clearError(refInput);
+    if (proofDropzone) clearError(proofDropzone);
 
-    if (!nameInput || !nameInput.value.trim()) {
-      showError(nameInput, 'Enter your full name.');
+    const refDigits = (refInput?.value || '').replace(/\D/g, '');
+    if (!/^\d{4}$/.test(refDigits)) {
+      showError(refInput, 'Enter the last 4 digits of your GCash reference number.');
       valid = false;
     }
 
-    if (fbInput && !fbInput.value.trim()) {
-      showError(fbInput, 'Enter your Facebook account name.');
-      valid = false;
-    }
-
-    const phoneVal = (phoneInput?.value || '').trim().replace(/[\s-]/g, '');
-    if (!/^09\d{9}$/.test(phoneVal)) {
-      showError(phoneInput, 'Enter a valid 11-digit mobile number (09XXXXXXXXX).');
+    if (!selectedProofFile) {
+      showError(proofDropzone, 'Please upload your GCash payment screenshot.');
       valid = false;
     }
 
@@ -690,7 +752,7 @@ export function validateStep(stepIndex) {
 }
 
 export function goToStep(targetStep) {
-  if (targetStep < 1 || targetStep > 4 || targetStep === currentStep) return;
+  if (targetStep < 1 || targetStep > 6 || targetStep === currentStep) return;
 
   // Validate current step(s) when moving forward
   if (targetStep > currentStep) {
@@ -755,14 +817,19 @@ export function goToStep(targetStep) {
     window.refreshVenueMap();
   }
 
-  // 5. Update recap
+  // 5. Start 10-minute checkout timer when entering Payment or Review
+  if (currentStep >= 5) {
+    startHoldTimer();
+  }
+
+  // 6. Update recap
   updateLiveSummary();
 }
 
 export async function handleBooking(event) {
   event.preventDefault();
 
-  for (let s = 1; s <= 4; s++) {
+  for (let s = 1; s <= 6; s++) {
     if (!validateStep(s)) {
       goToStep(s);
       return;
@@ -838,6 +905,7 @@ export async function handleBooking(event) {
   const bookingId = 'KS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   const addressVal = addressInput.value.trim();
   const mapLinkVal = mapLinkInput?.value?.trim() || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addressVal || 'Lapu-Lapu City'));
+  const refDigits = (document.getElementById('input-gcash-ref')?.value || '').replace(/\D/g, '').slice(0, 4);
 
   const bookingPayload = {
     id: bookingId,
@@ -852,7 +920,8 @@ export async function handleBooking(event) {
     paymentChannel: methodObj.name,
     paymentTypeLabel: 'Reservation Deposit',
     amountDue,
-    referenceNo: ''
+    referenceNo: refDigits,
+    proofUrl: ''
   };
 
   try {
@@ -860,13 +929,20 @@ export async function handleBooking(event) {
   } catch (e) {}
 
   const submitBtn = document.querySelector('.wizard-submit-btn');
-  const origBtnHtml = submitBtn ? submitBtn.innerHTML : 'Reserve';
+  const origBtnHtml = submitBtn ? submitBtn.innerHTML : 'Confirm & Secure Booking';
   if (submitBtn) {
-    submitBtn.textContent = 'Saving...';
+    submitBtn.textContent = 'Uploading Proof & Saving...';
     submitBtn.disabled = true;
   }
 
   try {
+    if (selectedProofFile) {
+      const uploadedUrl = await uploadPaymentProof(selectedProofFile, bookingId).catch(() => null);
+      if (uploadedUrl) {
+        bookingPayload.proofUrl = uploadedUrl;
+      }
+    }
+
     let dbSaved = false;
     try {
       await saveBookingToDB(bookingPayload);
@@ -884,9 +960,11 @@ export async function handleBooking(event) {
       console.error('[K-SoundRentals] Failed to save booking to Supabase:', dbErr);
     }
 
+    stopHoldTimer();
     await submitToWeb3Forms(bookingPayload).catch(() => false);
     showBookingConfirmation(bookingPayload, dbSaved);
   } catch {
+    stopHoldTimer();
     showBookingConfirmation(bookingPayload, false);
   } finally {
     if (submitBtn) {
@@ -926,6 +1004,64 @@ function initBreadcrumbsInteraction() {
   });
 }
 
+function initPaymentProofControls() {
+  const refInput = document.getElementById('input-gcash-ref');
+  if (refInput) {
+    refInput.addEventListener('input', () => {
+      refInput.value = refInput.value.replace(/\D/g, '').slice(0, 4);
+      clearError(refInput);
+      updateLiveSummary();
+    });
+  }
+
+  const termsGroup = document.getElementById('terms-checkbox-group');
+  ['agree-owner-terms', 'agree-rental-terms', 'agree-privacy'].forEach((id) => {
+    const cb = document.getElementById(id);
+    if (cb) {
+      cb.addEventListener('change', () => {
+        if (termsGroup) clearError(termsGroup);
+      });
+    }
+  });
+
+  const fileInput = document.getElementById('input-proof-file');
+  const dropzone = document.getElementById('proof-upload-dropzone');
+  const emptyBox = document.getElementById('proof-drop-empty');
+  const previewBox = document.getElementById('proof-drop-preview');
+  const previewImg = document.getElementById('proof-preview-img');
+  const previewName = document.getElementById('proof-preview-name');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        if (dropzone) showError(dropzone, 'Please upload a PNG, JPG, or WEBP screenshot.');
+        fileInput.value = '';
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        if (dropzone) showError(dropzone, 'Screenshot must be under 8 MB.');
+        fileInput.value = '';
+        return;
+      }
+      selectedProofFile = file;
+      if (dropzone) clearError(dropzone);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        selectedProofDataUrl = typeof reader.result === 'string' ? reader.result : '';
+        if (previewImg && selectedProofDataUrl) previewImg.src = selectedProofDataUrl;
+        if (previewName) previewName.textContent = file.name;
+        if (emptyBox) emptyBox.style.display = 'none';
+        if (previewBox) previewBox.style.display = 'flex';
+        updateLiveSummary();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
 export function initBookingForm() {
   const form = document.getElementById('booking-stepper-form') || document.querySelector('.booking-form');
   if (!form) return;
@@ -963,7 +1099,7 @@ export function initBookingForm() {
   }
 
   const watchedInputs = document.querySelectorAll(
-    '#input-name, #input-phone, #input-date, #delivery-time, #input-address, #package-select'
+    '#input-name, #input-phone, #input-fb, #input-date, #delivery-time, #input-address, #package-select'
   );
   watchedInputs.forEach((input) => {
     input.addEventListener('input', () => {
@@ -978,6 +1114,7 @@ export function initBookingForm() {
 
   initInteractiveFormPickers();
   initPaymentFlowControls();
+  initPaymentProofControls();
   initBreadcrumbsInteraction();
   updatePickupHelper();
   initCopyButtons();

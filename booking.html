@@ -75,13 +75,31 @@
                         <span class="crumb-num">3</span>
                         <span class="crumb-check">✓</span>
                     </span>
-                    <span class="crumb-title">Location</span>
+                    <span class="crumb-title">Venue &amp; Info</span>
                 </button>
                 <div class="crumb-connector" data-connector="3"><span class="crumb-connector-fill"></span></div>
 
                 <button type="button" class="crumb-pill disabled" data-step="4">
                     <span class="crumb-badge">
                         <span class="crumb-num">4</span>
+                        <span class="crumb-check">✓</span>
+                    </span>
+                    <span class="crumb-title">Terms</span>
+                </button>
+                <div class="crumb-connector" data-connector="4"><span class="crumb-connector-fill"></span></div>
+
+                <button type="button" class="crumb-pill disabled" data-step="5">
+                    <span class="crumb-badge">
+                        <span class="crumb-num">5</span>
+                        <span class="crumb-check">✓</span>
+                    </span>
+                    <span class="crumb-title">Payment</span>
+                </button>
+                <div class="crumb-connector" data-connector="5"><span class="crumb-connector-fill"></span></div>
+
+                <button type="button" class="crumb-pill disabled" data-step="6">
+                    <span class="crumb-badge">
+                        <span class="crumb-num">6</span>
                         <span class="crumb-check">✓</span>
                     </span>
                     <span class="crumb-title">Review</span>
@@ -219,7 +237,7 @@
                         </div>
                     </div>
 
-                    <!-- ================= STEP 3: LOCATION ================= -->
+                    <!-- ================= STEP 3: VENUE & CONTACT INFO ================= -->
                     <div class="wizard-step-pane" id="wizard-step-3" data-step-index="3">
                         <div class="form-group">
                             <label for="input-address">Delivery Address</label>
@@ -249,65 +267,8 @@
                             </div>
                         </div>
 
-                        <div class="wizard-actions-row">
-                            <button type="button" class="btn btn-outline wizard-back-btn" onclick="goToStep(2)">
-                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                                <span>Back</span>
-                            </button>
-                            <button type="button" class="btn btn-primary btn-shine wizard-next-btn" onclick="goToStep(4)">
-                                <span>Next</span>
-                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- ================= STEP 4: CONTACT & REVIEW ================= -->
-                    <div class="wizard-step-pane" id="wizard-step-4" data-step-index="4">
-
-                        <!-- ELEVATED ORDER SUMMARY CARD -->
-                        <div class="step4-review-capsule">
-                            <div class="review-capsule-head">
-                                <div class="review-head-left">
-                                    <span class="review-head-tag">ORDER REVIEW</span>
-                                    <span class="review-pkg-name" id="recap-pkg-title">Full Karaoke (12 Hours)</span>
-                                </div>
-                                <div class="review-head-right">
-                                    <small class="review-rate-label">Package Rate</small>
-                                    <strong class="review-price-val text-orange peso-inline" id="recap-price"><svg class="peso-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"/><path d="M6 4h7a5 5 0 0 1 0 10H6"/><path d="M4 8h16"/><path d="M4 11.5h16"/></svg>1,299</strong>
-                                </div>
-                            </div>
-
-                            <div class="review-capsule-body">
-                                <div class="review-pkg-media">
-                                    <img src="/images/pkg-full-karaoke.png" alt="Package Setup" id="recap-pkg-img" class="review-pkg-img">
-                                </div>
-                                <div class="review-info-list">
-                                    <div class="review-info-item">
-                                        <span class="review-item-icon">
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                        </span>
-                                        <div class="review-item-text">
-                                            <small>Schedule</small>
-                                            <strong id="recap-datetime">Select date &amp; time</strong>
-                                        </div>
-                                    </div>
-                                    <div class="review-info-item">
-                                        <span class="review-item-icon">
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                        </span>
-                                        <div class="review-item-text">
-                                            <small>Delivery Venue</small>
-                                            <strong id="recap-venue">Lapu-Lapu City</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-
                         <!-- CONTACT DETAILS -->
-                        <div class="form-row">
+                        <div class="form-row" style="margin-top: 14px;">
                             <div class="form-group">
                                 <label for="input-name">Full Name</label>
                                 <input
@@ -342,19 +303,268 @@
                                     required
                                 >
                             </div>
-                            <small class="form-field-hint">Used to verify your <span class="peso-inline"><svg class="peso-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"/><path d="M6 4h7a5 5 0 0 1 0 10H6"/><path d="M4 8h16"/><path d="M4 11.5h16"/></svg>500</span> deposit screenshot when you message our Facebook page (<a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="notice-fb-link">m.me/KSoundRentals ↗</a>).</small>
+                            <small class="form-field-hint">Used for delivery coordination and quick verification (<a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="notice-fb-link">m.me/KSoundRentals ↗</a>).</small>
                         </div>
 
-                        <!-- INVISIBLE ANTI-SPAM HONEYPOT TRAP -->
-                        <input type="text" id="booking-hp-trap" name="booking_company_trap" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" tabindex="-1" autocomplete="off">
+                        <div class="wizard-actions-row">
+                            <button type="button" class="btn btn-outline wizard-back-btn" onclick="goToStep(2)">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                <span>Back</span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-shine wizard-next-btn" onclick="goToStep(4)">
+                                <span>Next: Terms</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ================= STEP 4: TERMS & CONDITIONS ================= -->
+                    <div class="wizard-step-pane" id="wizard-step-4" data-step-index="4">
+                        <div class="wizard-alert-banner">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span><strong>Not booked yet.</strong> Your booking is only confirmed after you tap <strong>Confirm &amp; Secure Booking</strong> on Step 6.</span>
+                        </div>
+
+                        <div class="terms-header-block">
+                            <div class="terms-icon-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="terms-title">Terms &amp; Conditions</h3>
+                                <p class="terms-subtitle">Please read and accept before proceeding to GCash payment</p>
+                            </div>
+                        </div>
+
+                        <div class="terms-scroll-box" tabindex="0" aria-label="K-SoundRentals Terms and Conditions">
+                            <h4>Terms and Conditions</h4>
+                            <p><strong>1. Booking Confirmation &amp; Deposit</strong><br>
+                            A <span class="peso-inline"><svg class="peso-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"/><path d="M6 4h7a5 5 0 0 1 0 10H6"/><path d="M4 8h16"/><path d="M4 11.5h16"/></svg>500</span> GCash reservation deposit is required to lock your event date. Remaining balance is settled upon delivery and setup.</p>
+
+                            <p><strong>2. No Refunds / Rescheduling</strong><br>
+                            Reservation deposits are strictly non-refundable for cancellations or no-shows. Rescheduling requests must be sent at least 48 hours before the event date and are subject to calendar availability.</p>
+
+                            <p><strong>3. Equipment Care &amp; Liability</strong><br>
+                            The renter is responsible for keeping the JBL PartyBox speakers, wireless microphones, Smart TV, and accessories dry, secure, and free from damage or loss during the rental window. Any repair or replacement costs due to misuse or liquid damage will be charged to the renter.</p>
+
+                            <p><strong>4. Delivery, Setup &amp; Pickup Window</strong><br>
+                            Please ensure a representative is present at the pinned venue during the selected delivery time and scheduled pickup time (12-hour or 22-hour rental).</p>
+
+                            <p><strong>5. Weather &amp; Outdoor Setups</strong><br>
+                            Outdoor events must have proper roof/tent cover for all audio and TV equipment to protect against rain and direct heat.</p>
+                        </div>
+
+                        <div class="terms-checkbox-stack" id="terms-checkbox-group">
+                            <label class="terms-check-card">
+                                <input type="checkbox" id="agree-owner-terms" required>
+                                <span>I have read and agree to <strong>K-SoundRentals' Terms and Conditions</strong> (deposit, non-refundable policy, and equipment care).</span>
+                            </label>
+                            <label class="terms-check-card">
+                                <input type="checkbox" id="agree-rental-terms" required>
+                                <span>I have read and agree to the <strong>Rental Agreement</strong> (governed by the laws of the Republic of the Philippines).</span>
+                            </label>
+                            <label class="terms-check-card">
+                                <input type="checkbox" id="agree-privacy" required>
+                                <span>I consent to the collection and processing of my personal information under the <strong>Data Privacy Policy</strong> (Data Privacy Act of 2012 / Republic Act No. 10173).</span>
+                            </label>
+                        </div>
 
                         <div class="wizard-actions-row">
                             <button type="button" class="btn btn-outline wizard-back-btn" onclick="goToStep(3)">
                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                                 <span>Back</span>
                             </button>
+                            <button type="button" class="btn btn-primary btn-shine wizard-next-btn" onclick="goToStep(5)">
+                                <span>Next: Payment &amp; Proof</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ================= STEP 5: PAYMENT & PROOF ================= -->
+                    <div class="wizard-step-pane" id="wizard-step-5" data-step-index="5">
+                        <div class="wizard-alert-banner wizard-alert-timer">
+                            <div class="wizard-alert-left">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span><strong>Not booked yet.</strong> Slot held for you — finish Step 6 before the timer ends.</span>
+                            </div>
+                            <span class="hold-timer-badge" id="hold-timer-display">10:00</span>
+                        </div>
+
+                        <div class="terms-header-block">
+                            <div class="terms-icon-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="terms-title">Payment &amp; Proof</h3>
+                                <p class="terms-subtitle">Scan QR to pay the deposit and attach your GCash receipt</p>
+                            </div>
+                        </div>
+
+                        <!-- GCASH QR PAYMENT CARD -->
+                        <div class="gcash-pay-card">
+                            <div class="gcash-qr-frame" onclick="document.getElementById('qr-lightbox-modal').style.display='flex'" title="Tap to enlarge QR">
+                                <img src="/images/gcashref.jpg" alt="GCash QR Code — K-SoundRentals" class="gcash-qr-img">
+                                <span class="gcash-qr-zoom-hint">Tap QR to enlarge</span>
+                            </div>
+
+                            <div class="gcash-acct-meta">
+                                <span class="gcash-meta-lbl">Account Name</span>
+                                <strong class="gcash-meta-name">Kyle B. (K-SoundRentals)</strong>
+                                <div class="gcash-meta-num-row">
+                                    <span class="gcash-meta-num">0995 985 9549</span>
+                                    <button type="button" class="btn-copy-dp" onclick="window.copyGCashNumber(this)" title="Copy GCash Number">
+                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <span class="gcash-channel-tag">GCASH PAYMENT</span>
+                            </div>
+
+                            <div class="gcash-amount-bar">
+                                <span>Deposit Due Now:</span>
+                                <strong class="gcash-due-amount peso-inline" id="step5-deposit-due"><svg class="peso-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"/><path d="M6 4h7a5 5 0 0 1 0 10H6"/><path d="M4 8h16"/><path d="M4 11.5h16"/></svg>500</strong>
+                            </div>
+                        </div>
+
+                        <!-- LAST 4 DIGITS OF REFERENCE NUMBER -->
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label for="input-gcash-ref">Last 4 Digits of Reference Number</label>
+                            <input
+                                type="text"
+                                id="input-gcash-ref"
+                                class="gcash-ref-input"
+                                inputmode="numeric"
+                                maxlength="4"
+                                placeholder="0 0 0 0"
+                                autocomplete="off"
+                                required
+                            >
+                        </div>
+
+                        <!-- UPLOAD PROOF OF PAYMENT -->
+                        <div class="form-group" style="margin-top: 14px;">
+                            <label for="input-proof-file">Upload Proof of Payment</label>
+                            <div class="proof-info-warn">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span>Upload your <strong>payment screenshot</strong> showing the reference number and amount. Ensure the screenshot is clear and legible to avoid delays.</span>
+                            </div>
+
+                            <label class="proof-upload-dropzone" id="proof-upload-dropzone" for="input-proof-file">
+                                <input type="file" id="input-proof-file" accept="image/png,image/jpeg,image/webp" hidden>
+                                <div class="proof-drop-empty" id="proof-drop-empty">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <span>Upload Payment Screenshot</span>
+                                </div>
+                                <div class="proof-drop-preview" id="proof-drop-preview" style="display:none;">
+                                    <img id="proof-preview-img" src="" alt="Payment proof preview">
+                                    <div class="proof-preview-meta">
+                                        <strong id="proof-preview-name">screenshot.jpg</strong>
+                                        <span>Tap to change screenshot</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="proof-step-note">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span><strong>Step 5 of 6: Payment Submission</strong> — Enter the last 4 digits of your reference number and upload your payment proof to proceed.</span>
+                        </div>
+
+                        <div class="wizard-actions-row">
+                            <button type="button" class="btn btn-outline wizard-back-btn" onclick="goToStep(4)">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                <span>Back</span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-shine wizard-next-btn" onclick="goToStep(6)">
+                                <span>Proceed to Final Step</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ================= STEP 6: FINAL REVIEW & CONFIRM ================= -->
+                    <div class="wizard-step-pane" id="wizard-step-6" data-step-index="6">
+                        <div class="wizard-alert-banner wizard-alert-timer">
+                            <div class="wizard-alert-left">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span><strong>Almost done!</strong> Tap <strong>Confirm &amp; Secure Booking</strong> below to lock your date.</span>
+                            </div>
+                            <span class="hold-timer-badge" id="hold-timer-display-review">10:00</span>
+                        </div>
+
+                        <!-- ELEVATED ORDER SUMMARY CARD -->
+                        <div class="step4-review-capsule">
+                            <div class="review-capsule-head">
+                                <div class="review-head-left">
+                                    <span class="review-head-tag">FINAL REVIEW</span>
+                                    <span class="review-pkg-name" id="recap-pkg-title">Full Karaoke (12 Hours)</span>
+                                </div>
+                                <div class="review-head-right">
+                                    <small class="review-rate-label">Package Rate</small>
+                                    <strong class="review-price-val text-orange peso-inline" id="recap-price"><svg class="peso-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"/><path d="M6 4h7a5 5 0 0 1 0 10H6"/><path d="M4 8h16"/><path d="M4 11.5h16"/></svg>1,299</strong>
+                                </div>
+                            </div>
+
+                            <div class="review-capsule-body">
+                                <div class="review-pkg-media">
+                                    <img src="/images/pkg-full-karaoke.png" alt="Package Setup" id="recap-pkg-img" class="review-pkg-img">
+                                </div>
+                                <div class="review-info-list">
+                                    <div class="review-info-item">
+                                        <span class="review-item-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        </span>
+                                        <div class="review-item-text">
+                                            <small>Schedule</small>
+                                            <strong id="recap-datetime">Select date &amp; time</strong>
+                                        </div>
+                                    </div>
+                                    <div class="review-info-item">
+                                        <span class="review-item-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        </span>
+                                        <div class="review-item-text">
+                                            <small>Delivery Venue</small>
+                                            <strong id="recap-venue">Lapu-Lapu City</strong>
+                                        </div>
+                                    </div>
+                                    <div class="review-info-item">
+                                        <span class="review-item-icon">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        </span>
+                                        <div class="review-item-text">
+                                            <small>Customer &amp; Facebook</small>
+                                            <strong id="recap-customer">—</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="review-payment-proof-strip">
+                                <div class="review-proof-left">
+                                    <span class="review-terms-ok-pill">✓ Terms &amp; Privacy Accepted</span>
+                                    <div class="review-ref-display">
+                                        <small>GCash Deposit Ref (Last 4):</small>
+                                        <strong id="recap-gcash-ref">----</strong>
+                                    </div>
+                                </div>
+                                <div class="review-proof-thumb-wrap" id="recap-proof-thumb-wrap" style="display:none;">
+                                    <img id="recap-proof-img" src="" alt="Uploaded GCash Proof">
+                                    <small>Proof Attached</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INVISIBLE ANTI-SPAM HONEYPOT TRAP -->
+                        <input type="text" id="booking-hp-trap" name="booking_company_trap" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" tabindex="-1" autocomplete="off">
+
+                        <div class="wizard-actions-row">
+                            <button type="button" class="btn btn-outline wizard-back-btn" onclick="goToStep(5)">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                <span>Back</span>
+                            </button>
                             <button type="submit" class="btn btn-primary btn-shine wizard-submit-btn">
-                                <span>Confirm &amp; Reserve</span>
+                                <span>Confirm &amp; Secure Booking</span>
                                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
                             </button>
                         </div>
