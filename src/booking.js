@@ -422,7 +422,7 @@ function showBookingConfirmation(bookingData, dbSaved = true) {
       '  </div>',
       '  <h3>Booking Submitted — Pending Verification</h3>',
       '  <p class="conf-subtitle">',
-      '    Your date is reserved and your <strong><span class="peso-inline">' + pesoIconSvg(13) + depositAmt.toLocaleString() + '</span> GCash payment proof</strong> has been submitted for verification.',
+      '    Your date is reserved and your <strong><span class="peso-inline">' + pesoIconSvg(13) + depositAmt.toLocaleString() + '</span> GCash payment proof</strong> has been submitted for verification. <strong>Our page will contact you soon</strong> once your deposit is confirmed.',
       '  </p>',
       !dbSaved
         ? '  <p class="conf-subtitle" style="color:#fca5a5;margin-top:8px;">Note: Live database sync could not be confirmed. Please copy your summary below and send it to our Facebook Messenger so we can record your slot manually.</p>'
