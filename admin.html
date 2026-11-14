@@ -319,9 +319,9 @@
                                 <div class="filter-controls-group">
                                     <select id="filter-pkg-select" class="filter-select" onchange="window.setPackageFilter(this.value)" aria-label="Filter by package">
                                         <option value="all">All Packages</option>
-                                        <option value="Standard">Standard (₱1,299)</option>
-                                        <option value="Birthday">Birthday Special (₱1,899)</option>
-                                        <option value="Concert">Concert Rig (₱2,499)</option>
+                                        <option value="Speaker & Mic">Speaker &amp; Mic</option>
+                                        <option value="Full Karaoke Pro">Full Karaoke Pro</option>
+                                        <option value="Full Karaoke">Full Karaoke</option>
                                     </select>
 
                                     <select id="filter-date-select" class="filter-select" onchange="window.setDateFilter(this.value)" aria-label="Filter by date range">
@@ -333,19 +333,23 @@
                                     </select>
 
                                     <select id="filter-sort-select" class="filter-select" onchange="window.setSortFilter(this.value)" aria-label="Sort reservations">
+                                        <option value="newest" selected>Newest Created</option>
                                         <option value="date_asc">Date: Earliest</option>
                                         <option value="date_desc">Date: Latest</option>
                                         <option value="amount_desc">Amount: High to Low</option>
                                         <option value="amount_asc">Amount: Low to High</option>
-                                        <option value="newest">Newest Created</option>
                                     </select>
 
                                     <button type="button" id="btn-reset-filters" class="btn btn-outline btn-compact btn-reset-filters" onclick="window.resetAllFilters()" style="display:none;">
                                         <span>Reset</span>
                                     </button>
                                     <button type="button" id="btn-purge-holds" class="btn btn-outline btn-compact btn-purge-stale" onclick="window.purgeStaleHolds()" title="Release calendar dates for unverified pending holds older than 1 hour">
-                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                         <span>Purge Stale Holds</span>
+                                    </button>
+                                    <button type="button" id="btn-purge-old" class="btn btn-outline btn-compact btn-purge-stale" onclick="window.purgeOldRecords()" title="Permanently delete past and cancelled records">
+                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        <span>Delete Old Records</span>
                                     </button>
                                 </div>
                             </div>

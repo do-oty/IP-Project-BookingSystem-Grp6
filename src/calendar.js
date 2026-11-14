@@ -319,7 +319,7 @@ export function normalizeBookingStatus(status) {
 let currentLedgerFilter = 'all';
 let currentPackageFilter = 'all';
 let currentDateFilter = 'all';
-let currentSortFilter = 'date_asc';
+let currentSortFilter = 'newest';
 let currentSearchQuery = '';
 let cachedBookings = [];
 
@@ -356,7 +356,7 @@ export function resetAllFilters() {
   currentLedgerFilter = 'all';
   currentPackageFilter = 'all';
   currentDateFilter = 'all';
-  currentSortFilter = 'date_asc';
+  currentSortFilter = 'newest';
   currentSearchQuery = '';
 
   const searchInput = document.getElementById('admin-search-input');
@@ -369,7 +369,7 @@ export function resetAllFilters() {
   if (dateSelect) dateSelect.value = 'all';
 
   const sortSelect = document.getElementById('filter-sort-select');
-  if (sortSelect) sortSelect.value = 'date_asc';
+  if (sortSelect) sortSelect.value = 'newest';
 
   document.querySelectorAll('.filter-pill').forEach((p) => {
     p.classList.toggle('active', p.dataset.filter === 'all');
@@ -662,6 +662,9 @@ function updateAdminAnalytics(bookings) {
     normStatus: normalizeBookingStatus(b.status)
   }));
 
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  const currentBookings = normalized.filter((b) => !b.date || b.date >= todayStr);
+
   const counts = {
     all: normalized.length,
     pending_deposit: normalized.filter((b) => b.normStatus === 'pending_deposit').length,
@@ -669,6 +672,16 @@ function updateAdminAnalytics(bookings) {
     out_for_delivery: normalized.filter((b) => b.normStatus === 'out_for_delivery').length,
     completed: normalized.filter((b) => b.normStatus === 'completed').length,
     cancelled: normalized.filter((b) => b.normStatus === 'cancelled').length
+  };
+
+  // Badge counts on filter pills only count current/upcoming bookings (exclude old past dates)
+  const currentCounts = {
+    all: currentBookings.length,
+    pending_deposit: currentBookings.filter((b) => b.normStatus === 'pending_deposit').length,
+    deposit_verified: currentBookings.filter((b) => b.normStatus === 'deposit_verified').length,
+    out_for_delivery: currentBookings.filter((b) => b.normStatus === 'out_for_delivery').length,
+    completed: counts.completed,
+    cancelled: counts.cancelled
   };
 
   // Update filter pill counts
@@ -679,15 +692,14 @@ function updateAdminAnalytics(bookings) {
   const countCompleted = document.getElementById('count-completed');
   const countCancelled = document.getElementById('count-cancelled');
 
-  if (countAll) countAll.textContent = counts.all;
-  if (countPending) countPending.textContent = counts.pending_deposit;
-  if (countVerified) countVerified.textContent = counts.deposit_verified;
-  if (countTransit) countTransit.textContent = counts.out_for_delivery;
-  if (countCompleted) countCompleted.textContent = counts.completed;
-  if (countCancelled) countCancelled.textContent = counts.cancelled;
+  if (countAll) countAll.textContent = currentCounts.all;
+  if (countPending) countPending.textContent = currentCounts.pending_deposit;
+  if (countVerified) countVerified.textContent = currentCounts.deposit_verified;
+  if (countTransit) countTransit.textContent = currentCounts.out_for_delivery;
+  if (countCompleted) countCompleted.textContent = currentCounts.completed;
+  if (countCancelled) countCancelled.textContent = currentCounts.cancelled;
 
   const activeBookings = normalized.filter((b) => b.normStatus !== 'cancelled');
-  const todayStr = new Date().toLocaleDateString('en-CA');
   const upcoming = activeBookings
     .filter((b) => b.date && b.date >= todayStr && b.normStatus !== 'completed')
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -805,7 +817,7 @@ function renderFilteredBookingsList() {
     list = list.filter((b) => {
       const pkg = findPackageByLabel(b.packageChosen || b.package);
       const tier = pkg ? pkg.tier : (b.packageChosen || b.package || '');
-      return tier.toLowerCase().includes(currentPackageFilter.toLowerCase());
+      return tier.toLowerCase() === currentPackageFilter.toLowerCase();
     });
   }
 
@@ -868,7 +880,7 @@ function renderFilteredBookingsList() {
   // Update Result Count & Reset Button
   const countEl = document.getElementById('ledger-result-count');
   const resetBtn = document.getElementById('btn-reset-filters');
-  const isFiltered = currentLedgerFilter !== 'all' || currentPackageFilter !== 'all' || currentDateFilter !== 'all' || currentSearchQuery !== '' || currentSortFilter !== 'date_asc';
+  const isFiltered = currentLedgerFilter !== 'all' || currentPackageFilter !== 'all' || currentDateFilter !== 'all' || currentSearchQuery !== '' || currentSortFilter !== 'newest';
 
   if (countEl) {
     countEl.textContent = list.length + ' of ' + cachedBookings.length + ' reservations';
@@ -882,12 +894,17 @@ function renderFilteredBookingsList() {
     return;
   }
 
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  const oneDayAgoMs = Date.now() - 24 * 60 * 60 * 1000;
+
   const cardsHtml = list
     .map((b) => {
       const st = BOOKING_STATUSES[b.normStatus] || BOOKING_STATUSES.pending_deposit;
       const isCancelled = b.normStatus === 'cancelled';
       const isCompleted = b.normStatus === 'completed';
-      const isHoldExpired = b.normStatus === 'pending_deposit' && b.created_at && (Date.now() - new Date(b.created_at).getTime() > 60 * 60 * 1000);
+      const isUpcomingOrToday = !b.date || b.date >= todayStr;
+      const isNewBooking = isUpcomingOrToday && !isCancelled && !isCompleted && b.created_at && new Date(b.created_at).getTime() >= oneDayAgoMs;
+      const isHoldExpired = isUpcomingOrToday && b.normStatus === 'pending_deposit' && b.created_at && (Date.now() - new Date(b.created_at).getTime() > 60 * 60 * 1000);
       const pkg = findPackageByLabel(b.packageChosen || b.package);
       const pkgLabel = pkg ? `${pkg.tier} (${pkg.durationTag})` : (b.packageChosen || b.package || 'Full Karaoke');
       const pkgRate = pkg ? `<span class="peso-inline">${pesoIconSvg(13)}${pkg.price.toLocaleString()}</span>` : (b.amountDue || b.amount_due ? `<span class="peso-inline">${pesoIconSvg(13)}${Number(b.amountDue || b.amount_due).toLocaleString()}</span>` : `<span class="peso-inline">${pesoIconSvg(13)}1,299</span>`);
@@ -925,6 +942,7 @@ function renderFilteredBookingsList() {
               <span class="admin-booking-id">#${safeId || 'REF'}</span>
             </div>
             <div class="admin-status-wrap">
+              ${isNewBooking ? '<span class="admin-badge-new-booking">NEW</span>' : ''}
               ${isHoldExpired ? '<span class="admin-badge-expired-hold" title="Reservation deposit not verified within 1 hour">Hold Expired (>1h)</span>' : ''}
               <span class="admin-status-badge ${escapeHtml(st.badgeClass)}">
                 <span class="status-indicator"></span>
@@ -1151,6 +1169,33 @@ export async function purgeStaleHolds() {
   }
 }
 
+export async function purgeOldRecords() {
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  const oldRecords = cachedBookings.filter(
+    (b) => (b.date && b.date < todayStr) || normalizeBookingStatus(b.status) === 'cancelled'
+  );
+
+  if (oldRecords.length === 0) {
+    alert('No past or cancelled records to delete.');
+    return;
+  }
+
+  if (!confirm(`Permanently delete ${oldRecords.length} past and/or cancelled record(s)?\nThis cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    for (const b of oldRecords) {
+      await deleteBookingFromDB(b.id, b.date);
+    }
+    await renderAdminLedger();
+    await syncBlockedDatesFromServer();
+    alert(`Deleted ${oldRecords.length} old/cancelled record(s).`);
+  } catch (err) {
+    alert('Error deleting old records: ' + (err.message || 'Error'));
+  }
+}
+
 export function initCalendar() {
   const root = document.getElementById('calendar-root');
   if (!root) return;
@@ -1197,4 +1242,5 @@ export function initCalendar() {
   window.resetAllFilters = resetAllFilters;
   window.filterAdminLedgerSearch = filterAdminLedgerSearch;
   window.purgeStaleHolds = purgeStaleHolds;
+  window.purgeOldRecords = purgeOldRecords;
 }
