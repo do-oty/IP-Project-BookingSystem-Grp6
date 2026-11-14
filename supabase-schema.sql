@@ -23,6 +23,8 @@ create table if not exists public.bookings (
   status text default 'pending_deposit' -- 'pending_deposit' | 'deposit_verified' | 'dispatched' | 'completed' | 'cancelled'
 );
 
+alter table public.bookings add column if not exists proof_url text;
+
 -- Prevent concurrent double-bookings on the same active date
 create unique index if not exists idx_bookings_active_date
   on public.bookings (date)
