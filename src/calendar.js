@@ -983,7 +983,7 @@ function renderFilteredBookingsList() {
               <span>${escapeHtml(st.label)}</span>
             </span>
             <div class="ledger-proof-row">
-              ${refNo ? `<span class="ledger-ref-pill">GCash &bull;&bull;&bull;&bull; ${escapeHtml(refNo)}</span>` : ''}
+              ${refNo ? `<span class="ledger-ref-pill">Ref: ${escapeHtml(refNo)}</span>` : ''}
               ${
                 safeProofUrl
                   ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="ledger-proof-chip" title="Open full GCash screenshot">
