@@ -43,7 +43,7 @@ export async function getBookingsFromDB() {
   return data || [];
 }
 
-// 2. Insert booking strictly into Supabase
+// 2. Insert booking atomically into Supabase (with fallback if RPC is not yet deployed)
 export async function saveBookingToDB(bookingData) {
   const supabase = getSupabase();
   const bookingId = bookingData.id || ('KS-' + Math.random().toString(36).substring(2, 8).toUpperCase());
@@ -73,6 +73,40 @@ export async function saveBookingToDB(bookingData) {
     return payload;
   }
 
+  const rpcRes = await supabase.rpc('create_booking', {
+    p_id: bookingId,
+    p_name: payload.name,
+    p_phone: payload.phone,
+    p_fb_name: bookingData.fbName || '',
+    p_date: payload.date,
+    p_delivery_time: payload.delivery_time,
+    p_package: payload.package,
+    p_address: payload.address,
+    p_map_link: payload.map_link || '',
+    p_payment_channel: payload.payment_channel || '',
+    p_payment_type: payload.payment_type || '',
+    p_amount_due: payload.amount_due ?? 500,
+    p_reference_no: payload.reference_no || ''
+  });
+
+  if (!rpcRes.error) {
+    return rpcRes.data || payload;
+  }
+
+  const rpcMsg = rpcRes.error.message || '';
+  if (rpcMsg.includes('DATE_ALREADY_BOOKED') || rpcRes.error.code === '23505') {
+    const takenErr = new Error('DATE_ALREADY_BOOKED');
+    takenErr.code = 'DATE_ALREADY_BOOKED';
+    throw takenErr;
+  }
+
+  // Fallback to direct table insert only when the RPC function is not deployed yet
+  const rpcMissing = rpcRes.error.code === 'PGRST202' || rpcMsg.includes('create_booking');
+  if (!rpcMissing) {
+    console.error('[K-SoundRentals] Error creating booking via RPC:', rpcMsg);
+    throw rpcRes.error;
+  }
+
   let { error } = await supabase
     .from('bookings')
     .insert([payload]);
@@ -86,11 +120,16 @@ export async function saveBookingToDB(bookingData) {
   }
 
   if (error) {
+    if (error.code === '23505') {
+      const takenErr = new Error('DATE_ALREADY_BOOKED');
+      takenErr.code = 'DATE_ALREADY_BOOKED';
+      throw takenErr;
+    }
     console.error('[K-SoundRentals] Error writing booking to Supabase:', error.message);
     throw error;
   }
 
-  // Automatically lock the event date in Supabase blocked_dates
+  // Lock the event date in Supabase blocked_dates
   if (bookingData.date) {
     await syncBlockedDateToDB(bookingData.date, true);
   }

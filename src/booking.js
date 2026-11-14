@@ -3,14 +3,16 @@
 // ===================================================
 
 import {
-  API_BASE_URL,
   WEB3FORMS_ACCESS_KEY,
   PAYMENT_METHODS,
   PACKAGES,
   findPackageByLabel,
-  pesoIconSvg
+  pesoIconSvg,
+  formatCurrencyHtml,
+  escapeHtml,
+  sanitizeHttpUrl
 } from './packages.js';
-import { isBlocked, blockDateLocally } from './calendar.js';
+import { isBlocked, blockDateLocally, syncBlockedDatesFromServer } from './calendar.js';
 import { saveBookingToDB } from './db.js';
 
 let activePaymentChannel = 'gcash';
@@ -333,14 +335,13 @@ function buildBookingSummaryText(data) {
     .join('\n');
 }
 
-function showBookingConfirmation(bookingData, isOfflineFallback = false) {
+function showBookingConfirmation(bookingData, dbSaved = true) {
   const formCard = document.getElementById('booking-form-card');
   const successBox = document.getElementById('success-message');
   const contentEl = document.getElementById('booking-confirmation-content');
   const stepperBar = document.querySelector('.booking-breadcrumbs-wrap');
 
   blockDateLocally(bookingData.date);
-  saveBookingToDB(bookingData);
 
   if (formCard) formCard.style.display = 'none';
   if (stepperBar) stepperBar.style.display = 'none';
@@ -361,7 +362,16 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
   const totalPrice = pkgObj.price || 1299;
   const depositAmt = bookingData.amountDue || 500;
   const balanceAmt = Math.max(0, totalPrice - depositAmt);
-  const mapsUrl = bookingData.mapLink || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(bookingData.address || 'Lapu-Lapu City'));
+  const fallbackMapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(bookingData.address || 'Lapu-Lapu City');
+  const mapsUrl = sanitizeHttpUrl(bookingData.mapLink, fallbackMapsUrl);
+
+  const safeId = escapeHtml(bookingData.id || 'CONFIRMED');
+  const safeDeliveryTime = escapeHtml(bookingData.deliveryTime || '');
+  const safeName = escapeHtml(bookingData.name || '');
+  const safePhone = escapeHtml(bookingData.phone || '');
+  const safeTelHref = encodeURIComponent(String(bookingData.phone || '').replace(/[^+\d]/g, ''));
+  const safeFbName = escapeHtml(bookingData.fbName || '—');
+  const safeAddress = escapeHtml(bookingData.address || '');
 
   if (contentEl) {
     contentEl.innerHTML = [
@@ -373,6 +383,9 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
       '  <p class="conf-subtitle">',
       '    Your setup is on hold. Complete your <strong><span class="peso-inline">' + pesoIconSvg(13) + '500</span> GCash deposit</strong> below and message our Facebook page to lock in your date.',
       '  </p>',
+      !dbSaved
+        ? '  <p class="conf-subtitle" style="color:#fca5a5;margin-top:8px;">Note: Live database sync could not be confirmed. Please copy your summary below and send it to our Facebook Messenger so we can record your slot manually.</p>'
+        : '',
       '</div>',
       '<!-- UNIFIED VIP RESERVATION & PAYMENT PASS -->',
       '<div class="conf-pass-card">',
@@ -380,7 +393,7 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
       '  <div class="conf-pass-header">',
       '    <div class="conf-ref-pill">',
       '      <span class="ref-label">REF</span>',
-      '      <strong class="ref-code">#' + (bookingData.id || 'CONFIRMED') + '</strong>',
+      '      <strong class="ref-code">#' + safeId + '</strong>',
       '    </div>',
       '    <div class="conf-status-tag">',
       '      <span>Awaiting <span class="peso-inline">' + pesoIconSvg(12) + depositAmt.toLocaleString() + '</span> Deposit</span>',
@@ -389,12 +402,12 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
       '  <!-- PACKAGE HIGHLIGHT STRIP -->',
       '  <div class="conf-pkg-strip">',
       '    <div class="conf-pkg-thumb-box">',
-      '      <img src="' + (pkgObj.image || '/images/pkg-full-karaoke.png') + '" alt="' + (pkgObj.label || 'Package') + '" class="conf-pkg-strip-img">',
+      '      <img src="' + (pkgObj.image || '/images/pkg-full-karaoke.png') + '" alt="' + escapeHtml(pkgObj.label || 'Package') + '" class="conf-pkg-strip-img">',
       '    </div>',
       '    <div class="conf-pkg-strip-info">',
-      '      <span class="conf-pkg-strip-tier">' + (pkgObj.tier || 'Karaoke Package') + '</span>',
-      '      <h4 class="conf-pkg-strip-name">' + formatCurrencyHtml(pkgObj.label || bookingData.packageChosen, 16) + '</h4>',
-      '      <span class="conf-pkg-strip-dur">' + (pkgObj.durationTag || '12 Hours Rental') + '</span>',
+      '      <span class="conf-pkg-strip-tier">' + escapeHtml(pkgObj.tier || 'Karaoke Package') + '</span>',
+      '      <h4 class="conf-pkg-strip-name">' + formatCurrencyHtml(pkgObj.label || escapeHtml(bookingData.packageChosen), 16) + '</h4>',
+      '      <span class="conf-pkg-strip-dur">' + escapeHtml(pkgObj.durationTag || '12 Hours Rental') + '</span>',
       '    </div>',
       '    <div class="conf-pkg-strip-price">',
       '      <span class="conf-rate-label">Package Rate</span>',
@@ -408,21 +421,21 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
       '        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
       '        <span>Schedule</span>',
       '      </span>',
-      '      <strong class="conf-cell-val">' + formattedDate + ' • ' + bookingData.deliveryTime + '</strong>',
+      '      <strong class="conf-cell-val">' + escapeHtml(formattedDate) + ' • ' + safeDeliveryTime + '</strong>',
       '    </div>',
       '    <div class="conf-detail-cell">',
       '      <span class="conf-cell-label">',
       '        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
       '        <span>Customer</span>',
       '      </span>',
-      '      <strong class="conf-cell-val">' + bookingData.name + ' (<a href="tel:' + bookingData.phone + '" class="conf-tel-link">' + bookingData.phone + '</a>)</strong>',
+      '      <strong class="conf-cell-val">' + safeName + ' (<a href="tel:' + safeTelHref + '" class="conf-tel-link">' + safePhone + '</a>)</strong>',
       '    </div>',
       '    <div class="conf-detail-cell">',
       '      <span class="conf-cell-label">',
       '        <svg viewBox="0 0 24 24" width="13" height="13" fill="#0084ff"><path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.914 1.454 5.518 3.734 7.202V22l3.411-1.872c.905.251 1.867.387 2.855.387 5.523 0 10-4.145 10-9.257C22 6.145 17.523 2 12 2zm1.002 12.443-2.56-2.73-4.996 2.73 5.496-5.834 2.624 2.73 4.932-2.73-5.496 5.834z"/></svg>',
       '        <span>Facebook</span>',
       '      </span>',
-      '      <strong class="conf-cell-val">' + (bookingData.fbName || '—') + '</strong>',
+      '      <strong class="conf-cell-val">' + safeFbName + '</strong>',
       '    </div>',
       '    <div class="conf-detail-cell full-width">',
       '      <span class="conf-cell-label">',
@@ -430,8 +443,8 @@ function showBookingConfirmation(bookingData, isOfflineFallback = false) {
       '        <span>Delivery Venue</span>',
       '      </span>',
       '      <div class="conf-venue-line">',
-      '        <strong class="conf-cell-val">' + bookingData.address + '</strong>',
-      '        <a href="' + mapsUrl + '" target="_blank" rel="noopener noreferrer" class="conf-map-pill">',
+      '        <strong class="conf-cell-val">' + safeAddress + '</strong>',
+      '        <a href="' + escapeHtml(mapsUrl) + '" target="_blank" rel="noopener noreferrer" class="conf-map-pill">',
       '          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
       '          <span>Map ↗</span>',
       '        </a>',
@@ -854,28 +867,27 @@ export async function handleBooking(event) {
   }
 
   try {
-    const web3Sent = await submitToWeb3Forms(bookingPayload).catch(() => false);
-
-    let backendSent = false;
+    let dbSaved = false;
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
-      const response = await fetch(`${API_BASE_URL}/booking`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingPayload),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      const result = await response.json();
-      backendSent = Boolean(result && result.success);
-    } catch {
-      backendSent = false;
+      await saveBookingToDB(bookingPayload);
+      dbSaved = true;
+    } catch (dbErr) {
+      if (dbErr?.code === 'DATE_ALREADY_BOOKED' || String(dbErr?.message || '').includes('DATE_ALREADY_BOOKED')) {
+        try {
+          localStorage.removeItem(LAST_BOOKING_KEY);
+        } catch (e) {}
+        await syncBlockedDatesFromServer().catch(() => {});
+        alert('Sorry, this date was just booked by another customer. Please choose another available date.');
+        goToStep(1);
+        return;
+      }
+      console.error('[K-SoundRentals] Failed to save booking to Supabase:', dbErr);
     }
 
-    showBookingConfirmation(bookingPayload, !web3Sent && !backendSent);
+    await submitToWeb3Forms(bookingPayload).catch(() => false);
+    showBookingConfirmation(bookingPayload, dbSaved);
   } catch {
-    showBookingConfirmation(bookingPayload, true);
+    showBookingConfirmation(bookingPayload, false);
   } finally {
     if (submitBtn) {
       submitBtn.innerHTML = origBtnHtml;

@@ -2,18 +2,16 @@
 // K-SOUNDRENTALS — Shared Package Catalog, Payment & Web3Forms Config
 // ===================================================
 
-export const API_BASE_URL = 'http://localhost:3000';
-
-// Supabase Cloud Database: set in .env or paste your credentials here
+// Supabase Cloud Database: configured via .env locally or Vercel Environment Variables
 export const SUPABASE_URL =
   import.meta.env?.VITE_SUPABASE_URL ||
   localStorage.getItem('supabase_url') ||
-  'https://lvbpcbapfdfqrytswaxy.supabase.co';
+  '';
 
 export const SUPABASE_ANON_KEY =
   import.meta.env?.VITE_SUPABASE_ANON_KEY ||
   localStorage.getItem('supabase_anon_key') ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2YnBjYmFwZmRmcXJ5dHN3YXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwODMzMzMsImV4cCI6MjEwOTY1OTMzM30.0ABqTOcOd44ZjWIvQFzie6HjLfz9WxGoSTWIqg87fJg';
+  '';
 
 // Google Maps API Key: set in .env (VITE_GOOGLE_MAPS_KEY) or paste your key here
 export const GOOGLE_MAPS_API_KEY =
@@ -24,7 +22,7 @@ export const GOOGLE_MAPS_API_KEY =
 // Web3Forms Access Key for automated email notifications
 export const WEB3FORMS_ACCESS_KEY =
   import.meta.env?.VITE_WEB3FORMS_KEY ||
-  'be665f3d-3ae0-41ff-9d6e-b1053c0b2dd9';
+  '';
 
 export const PAYMENT_METHODS = {
   gcash: {
@@ -178,4 +176,29 @@ export function pesoIconSvg(sizeOrClass = 16) {
 export function formatCurrencyHtml(text, size = 16) {
   if (!text) return '';
   return String(text).replace(/₱\s*([\d,]+)/g, (_, amt) => `<span class="peso-inline">${pesoIconSvg(size)}${amt}</span>`);
+}
+
+/** Escape untrusted text before interpolating into HTML templates. */
+export function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Allow only http(s) URLs for external links rendered from user input. */
+export function sanitizeHttpUrl(url, fallback = '') {
+  if (!url) return fallback;
+  try {
+    const parsed = new URL(String(url).trim());
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+      return parsed.href;
+    }
+  } catch {
+    // Invalid URL
+  }
+  return fallback;
 }

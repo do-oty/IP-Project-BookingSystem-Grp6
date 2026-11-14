@@ -24,7 +24,7 @@ import {
   adminSignOut,
   getAdminSession
 } from './db.js';
-import { findPackageByLabel, pesoIconSvg } from './packages.js';
+import { findPackageByLabel, pesoIconSvg, escapeHtml, sanitizeHttpUrl } from './packages.js';
 
 let isAdmin = false;
 let selectedDate = null;
@@ -891,75 +891,79 @@ function renderFilteredBookingsList() {
       const pkg = findPackageByLabel(b.packageChosen || b.package);
       const pkgLabel = pkg ? `${pkg.tier} (${pkg.durationTag})` : (b.packageChosen || b.package || 'Full Karaoke');
       const pkgRate = pkg ? `<span class="peso-inline">${pesoIconSvg(13)}${pkg.price.toLocaleString()}</span>` : (b.amountDue || b.amount_due ? `<span class="peso-inline">${pesoIconSvg(13)}${Number(b.amountDue || b.amount_due).toLocaleString()}</span>` : `<span class="peso-inline">${pesoIconSvg(13)}1,299</span>`);
-      const mapUrl = b.map_link || b.mapLink || b.map_url || b.mapUrl;
+      const safeMapUrl = sanitizeHttpUrl(b.map_link || b.mapLink || b.map_url || b.mapUrl, '');
       const fbName = b.fb_name || b.fbName;
       const deliveryTime = b.delivery_time || b.deliveryTime || '';
       const refNo = b.reference_no || b.referenceNo || '';
+
+      const safeId = escapeHtml(b.id || '');
+      const safeDate = escapeHtml(b.date || '');
+      const safeTelHref = encodeURIComponent(String(b.phone || '').replace(/[^+\d]/g, ''));
 
       // Contextual advance button
       let advanceButtonHtml = '';
       if (st.nextAction && st.nextStatus) {
         advanceButtonHtml = `
-          <button type="button" class="btn-admin-advance btn-step-${st.nextStatus}" onclick="window.updateBookingStatus('${b.id}', '${st.nextStatus}', '${b.date}')">
+          <button type="button" class="btn-admin-advance btn-step-${escapeHtml(st.nextStatus)}" data-action="status" data-booking-id="${safeId}" data-next-status="${escapeHtml(st.nextStatus)}" data-booking-date="${safeDate}">
             ${st.nextIcon || ''}
-            <span>${st.nextActionHtml || st.nextAction}</span>
+            <span>${st.nextActionHtml || escapeHtml(st.nextAction)}</span>
           </button>
         `;
       }
 
       // Status selector options
       const statusOptionsHtml = Object.values(BOOKING_STATUSES)
-        .map((opt) => `<option value="${opt.key}" ${opt.key === b.normStatus ? 'selected' : ''}>${opt.label}</option>`)
+        .map((opt) => `<option value="${escapeHtml(opt.key)}" ${opt.key === b.normStatus ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`)
         .join('');
 
       return `
-        <div class="admin-booking-item ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${b.id}">
+        <div class="admin-booking-item ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${safeId}">
           <div class="admin-booking-top">
             <div class="admin-booking-id-wrap">
-              <span class="admin-booking-date">${b.date}${deliveryTime ? ` • ${deliveryTime}` : ''}</span>
-              <span class="admin-booking-id">#${b.id || 'REF'}</span>
+              <span class="admin-booking-date">${safeDate}${deliveryTime ? ` • ${escapeHtml(deliveryTime)}` : ''}</span>
+              <span class="admin-booking-id">#${safeId || 'REF'}</span>
             </div>
             <div class="admin-status-wrap">
               ${isHoldExpired ? '<span class="admin-badge-expired-hold" title="Reservation deposit not verified within 1 hour">Hold Expired (>1h)</span>' : ''}
-              <span class="admin-status-badge ${st.badgeClass}">
+              <span class="admin-status-badge ${escapeHtml(st.badgeClass)}">
                 <span class="status-indicator"></span>
-                <span>${st.label}</span>
+                <span>${escapeHtml(st.label)}</span>
               </span>
             </div>
           </div>
 
           <div class="admin-client-info">
-            <span class="admin-client-name">${b.name || 'Customer'}</span>
+            <span class="admin-client-name">${escapeHtml(b.name || 'Customer')}</span>
             <div class="admin-client-contacts">
-              ${b.phone ? `<a href="tel:${b.phone}" class="admin-phone-link" title="Call customer">${b.phone}</a>` : ''}
-              ${fbName ? `<a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="admin-fb-badge" title="Open Messenger">FB: ${fbName}</a>` : ''}
+              ${b.phone ? `<a href="tel:${safeTelHref}" class="admin-phone-link" title="Call customer">${escapeHtml(b.phone)}</a>` : ''}
+              ${fbName ? `<a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="admin-fb-badge" title="Open Messenger">FB: ${escapeHtml(fbName)}</a>` : ''}
             </div>
           </div>
 
           <div class="admin-pkg-badge-strip">
-            <span class="admin-pkg-title">${pkgLabel}</span>
+            <span class="admin-pkg-title">${escapeHtml(pkgLabel)}</span>
             <span class="admin-rate-tag">Rate: ${pkgRate}</span>
-            ${refNo ? `<span class="admin-rate-tag">Deposit Ref: ${refNo}</span>` : ''}
+            ${refNo ? `<span class="admin-rate-tag">Deposit Ref: ${escapeHtml(refNo)}</span>` : ''}
           </div>
 
           <div class="admin-booking-venue">
-            <span>📍 ${b.address || 'Lapu-Lapu City'}</span>
-            ${mapUrl ? `<a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="admin-pin-pill">Map ↗</a>` : ''}
+            <span>📍 ${escapeHtml(b.address || 'Lapu-Lapu City')}</span>
+            ${safeMapUrl ? `<a href="${escapeHtml(safeMapUrl)}" target="_blank" rel="noopener noreferrer" class="admin-pin-pill">Map ↗</a>` : ''}
           </div>
 
           <div class="admin-booking-actions">
             ${advanceButtonHtml}
             <div class="admin-status-select-wrap">
-              <select class="admin-status-select" onchange="window.updateBookingStatus('${b.id}', this.value, '${b.date}')" title="Change status" aria-label="Booking status">
+              <select class="admin-status-select" data-action="status-select" data-booking-id="${safeId}" data-booking-date="${safeDate}" title="Change status" aria-label="Booking status">
                 ${statusOptionsHtml}
               </select>
             </div>
             ${
               isCancelled
-                ? `<button type="button" class="admin-reactivate-btn" onclick="window.updateBookingStatus('${b.id}', 'deposit_verified', '${b.date}')">Reactivate</button>`
-                : `<button type="button" class="admin-cancel-btn" onclick="window.updateBookingStatus('${b.id}', 'cancelled', '${b.date}')">Cancel</button>`
+                ? `<button type="button" class="admin-reactivate-btn" data-action="status" data-booking-id="${safeId}" data-next-status="deposit_verified" data-booking-date="${safeDate}">Reactivate</button>`
+                : `<button type="button" class="admin-cancel-btn" data-action="status" data-booking-id="${safeId}" data-next-status="cancelled" data-booking-date="${safeDate}">Cancel</button>`
             }
-            <button type="button" class="admin-delete-btn" onclick="window.deleteSavedBooking('${b.id}', '${b.date}')" title="Permanently delete">Delete</button>
+            <button type="button" class="admin-delete-btn" data-action="delete" data-booking-id="${safeId}" data-booking-date="${safeDate}" title="Permanently delete">Delete</button>
           </div>
         </div>
       `;
@@ -967,6 +971,27 @@ function renderFilteredBookingsList() {
     .join('');
 
   container.innerHTML = `<div class="admin-ledger-scroll">${cardsHtml}</div>`;
+
+  if (!container.dataset.ledgerDelegated) {
+    container.dataset.ledgerDelegated = '1';
+    container.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.bookingId;
+      const dateStr = btn.dataset.bookingDate;
+      if (action === 'status') {
+        updateBookingStatus(id, btn.dataset.nextStatus, dateStr);
+      } else if (action === 'delete') {
+        deleteSavedBooking(id, dateStr);
+      }
+    });
+    container.addEventListener('change', (e) => {
+      const sel = e.target.closest('select[data-action="status-select"]');
+      if (!sel) return;
+      updateBookingStatus(sel.dataset.bookingId, sel.value, sel.dataset.bookingDate);
+    });
+  }
 }
 
 export async function updateBookingStatus(id, newStatus, dateStr) {
