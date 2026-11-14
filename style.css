@@ -10425,3 +10425,194 @@ summary:focus-visible,
   color: rgba(255, 255, 255, 0.45);
   font-style: italic;
 }
+
+
+/* ===================================================
+   CLEAN SAAS RESERVATION ROWS (#view-ledger)
+   =================================================== */
+#view-ledger .admin-ledger-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ledger-row-card {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.2fr) minmax(220px, 1.3fr) minmax(150px, 0.9fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.ledger-row-card:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.ledger-row-card.booking-cancelled {
+  opacity: 0.58;
+}
+
+.ledger-col-main,
+.ledger-col-pkg,
+.ledger-col-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ledger-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ledger-customer-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ledger-ref-code {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-meta-line,
+.ledger-contact-line,
+.ledger-price-line,
+.ledger-venue-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.ledger-pkg-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.ledger-muted {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ledger-dot {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.ledger-link,
+.ledger-map-link {
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.ledger-link:hover,
+.ledger-map-link:hover {
+  text-decoration: underline;
+}
+
+.ledger-venue-text {
+  color: rgba(255, 255, 255, 0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+
+.ledger-col-proof {
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ledger-proof-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 10px;
+  background: rgba(0, 125, 254, 0.14);
+  border: 1px solid rgba(0, 125, 254, 0.32);
+  color: #93c5fd;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.ledger-proof-chip:hover {
+  background: rgba(0, 125, 254, 0.24);
+  border-color: rgba(96, 165, 250, 0.65);
+}
+
+.ledger-proof-chip img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.ledger-no-proof {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ledger-col-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ledger-secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ledger-icon-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.ledger-icon-delete:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+@media (max-width: 960px) {
+  .ledger-row-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .ledger-col-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}

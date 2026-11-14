@@ -946,70 +946,68 @@ function renderFilteredBookingsList() {
         .map((opt) => `<option value="${escapeHtml(opt.key)}" ${opt.key === b.normStatus ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`)
         .join('');
 
+      const formattedEventDate = b.date
+        ? new Date(b.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'TBD';
+
       return `
-        <div class="admin-booking-item ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${safeId}">
-          <div class="admin-booking-top">
-            <div class="admin-booking-id-wrap">
-              <span class="admin-booking-date">${safeDate}${deliveryTime ? ` • ${escapeHtml(deliveryTime)}` : ''}</span>
-              <span class="admin-booking-id">#${safeId || 'REF'}</span>
-            </div>
-            <div class="admin-status-wrap">
+        <div class="ledger-row-card ${isCancelled ? 'booking-cancelled' : ''} ${isCompleted ? 'booking-completed' : ''}" data-booking-id="${safeId}">
+          <div class="ledger-col-main">
+            <div class="ledger-row-head">
+              <span class="ledger-customer-name">${escapeHtml(b.name || 'Customer')}</span>
               ${isNewBooking ? '<span class="admin-badge-new-booking">NEW</span>' : ''}
-              ${isHoldExpired ? '<span class="admin-badge-expired-hold" title="Reservation deposit not verified within 1 hour">Hold Expired (>1h)</span>' : ''}
-              <span class="admin-status-badge ${escapeHtml(st.badgeClass)}">
-                <span class="status-indicator"></span>
-                <span>${escapeHtml(st.label)}</span>
-              </span>
+              <span class="ledger-ref-code">#${safeId || 'REF'}</span>
+            </div>
+            <div class="ledger-meta-line">
+              <span>${escapeHtml(formattedEventDate)}${deliveryTime ? ` • ${escapeHtml(deliveryTime)}` : ''}</span>
+              ${submittedAt ? `<span class="ledger-dot">&middot;</span><span class="ledger-muted">Sent ${escapeHtml(submittedAt)}</span>` : ''}
+            </div>
+            <div class="ledger-contact-line">
+              ${b.phone ? `<a href="tel:${safeTelHref}" class="ledger-link">${escapeHtml(b.phone)}</a>` : ''}
+              ${fbName ? `<span class="ledger-dot">&middot;</span><a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="ledger-link">FB: ${escapeHtml(fbName)}</a>` : ''}
             </div>
           </div>
 
-          <div class="admin-client-info">
-            <span class="admin-client-name">${escapeHtml(b.name || 'Customer')}</span>
-            <div class="admin-client-contacts">
-              ${b.phone ? `<a href="tel:${safeTelHref}" class="admin-phone-link" title="Call customer">${escapeHtml(b.phone)}</a>` : ''}
-              ${fbName ? `<a href="https://m.me/KSoundRentals" target="_blank" rel="noopener noreferrer" class="admin-fb-badge" title="Open Messenger">FB: ${escapeHtml(fbName)}</a>` : ''}
+          <div class="ledger-col-pkg">
+            <div class="ledger-pkg-name">${escapeHtml(pkgLabel)}</div>
+            <div class="ledger-price-line">
+              <span>Total ${pkgRate}</span>
+              <span class="ledger-dot">&middot;</span>
+              <span class="ledger-muted">Deposit ${depositRate}</span>
+              <span class="ledger-dot">&middot;</span>
+              <span class="ledger-muted">Bal ${balanceRate}</span>
+            </div>
+            <div class="ledger-venue-line">
+              <span class="ledger-venue-text">${escapeHtml(b.address || 'Lapu-Lapu City')}</span>
+              ${safeMapUrl ? `<a href="${escapeHtml(safeMapUrl)}" target="_blank" rel="noopener noreferrer" class="ledger-map-link">Map ↗</a>` : ''}
             </div>
           </div>
 
-          <div class="admin-pkg-badge-strip">
-            <span class="admin-pkg-title">${escapeHtml(pkgLabel)}</span>
-            <span class="admin-rate-tag">Rate: ${pkgRate}</span>
-            <span class="admin-rate-tag">Deposit: ${depositRate} (${escapeHtml(payChannel)})</span>
-            <span class="admin-rate-tag">Balance: ${balanceRate}</span>
-            ${refNo ? `<span class="admin-rate-tag">Ref: #${escapeHtml(refNo)}</span>` : ''}
-            ${submittedAt ? `<span class="admin-rate-tag">Submitted: ${escapeHtml(submittedAt)}</span>` : ''}
+          <div class="ledger-col-proof">
+            <span class="admin-status-badge ${escapeHtml(st.badgeClass)}">
+              <span class="status-indicator"></span>
+              <span>${escapeHtml(st.label)}</span>
+            </span>
+            ${
+              safeProofUrl
+                ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="ledger-proof-chip" title="View GCash Screenshot">
+                     <img src="${escapeHtml(safeProofUrl)}" alt="Proof #${safeId}" loading="lazy">
+                     <span>${refNo ? `Ref #${escapeHtml(refNo)}` : 'View Proof'} ↗</span>
+                   </a>`
+                : `<span class="ledger-no-proof">${refNo ? `GCash Ref #${escapeHtml(refNo)}` : 'No proof image'}</span>`
+            }
           </div>
 
-          ${
-            safeProofUrl
-              ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="admin-proof-preview-card" title="Open full-size payment proof">
-                   <img src="${escapeHtml(safeProofUrl)}" alt="GCash Proof #${safeId}" loading="lazy">
-                   <div class="admin-proof-preview-meta">
-                     <strong>GCash Payment Proof Attached</strong>
-                     <span>${refNo ? `Ref #${escapeHtml(refNo)} &bull; ` : ''}Click to open full image ↗</span>
-                   </div>
-                 </a>`
-              : `<div class="admin-proof-missing-note">No payment screenshot attached (submitted before proof upload or offline)</div>`
-          }
-
-          <div class="admin-booking-venue">
-            <span>📍 ${escapeHtml(b.address || 'Lapu-Lapu City')}</span>
-            ${safeMapUrl ? `<a href="${escapeHtml(safeMapUrl)}" target="_blank" rel="noopener noreferrer" class="admin-pin-pill">Map ↗</a>` : ''}
-          </div>
-
-          <div class="admin-booking-actions">
+          <div class="ledger-col-actions">
             ${advanceButtonHtml}
-            <div class="admin-status-select-wrap">
+            <div class="ledger-secondary-actions">
               <select class="admin-status-select" data-action="status-select" data-booking-id="${safeId}" data-booking-date="${safeDate}" title="Change status" aria-label="Booking status">
                 ${statusOptionsHtml}
               </select>
+              <button type="button" class="ledger-icon-delete" data-action="delete" data-booking-id="${safeId}" data-booking-date="${safeDate}" title="Delete booking" aria-label="Delete booking">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
             </div>
-            ${
-              isCancelled
-                ? `<button type="button" class="admin-reactivate-btn" data-action="status" data-booking-id="${safeId}" data-next-status="deposit_verified" data-booking-date="${safeDate}">Reactivate</button>`
-                : `<button type="button" class="admin-cancel-btn" data-action="status" data-booking-id="${safeId}" data-next-status="cancelled" data-booking-date="${safeDate}">Cancel</button>`
-            }
-            <button type="button" class="admin-delete-btn" data-action="delete" data-booking-id="${safeId}" data-booking-date="${safeDate}" title="Permanently delete">Delete</button>
           </div>
         </div>
       `;
