@@ -750,7 +750,10 @@ function updateAdminAnalytics(bookings) {
   updateAdminCharts(normalized, counts, totalContractValue, activeBookings);
 
   const navCountAll = document.getElementById('nav-count-all');
-  if (navCountAll) navCountAll.textContent = counts.all;
+  if (navCountAll) {
+    navCountAll.textContent = currentCounts.pending_deposit;
+    navCountAll.style.display = currentCounts.pending_deposit > 0 ? 'inline-flex' : 'none';
+  }
 
   const upcomingContainer = document.getElementById('overview-upcoming-container');
   if (upcomingContainer) {
@@ -907,12 +910,21 @@ function renderFilteredBookingsList() {
       const isHoldExpired = isUpcomingOrToday && b.normStatus === 'pending_deposit' && b.created_at && (Date.now() - new Date(b.created_at).getTime() > 60 * 60 * 1000);
       const pkg = findPackageByLabel(b.packageChosen || b.package);
       const pkgLabel = pkg ? `${pkg.tier} (${pkg.durationTag})` : (b.packageChosen || b.package || 'Full Karaoke');
-      const pkgRate = pkg ? `<span class="peso-inline">${pesoIconSvg(13)}${pkg.price.toLocaleString()}</span>` : (b.amountDue || b.amount_due ? `<span class="peso-inline">${pesoIconSvg(13)}${Number(b.amountDue || b.amount_due).toLocaleString()}</span>` : `<span class="peso-inline">${pesoIconSvg(13)}1,299</span>`);
+      const totalRateNum = pkg ? pkg.price : (Number(b.amountDue || b.amount_due) || 1299);
+      const depositNum = Number(b.amountDue || b.amount_due) || (pkg ? pkg.deposit : 500) || 500;
+      const balanceNum = Math.max(0, totalRateNum - depositNum);
+      const pkgRate = `<span class="peso-inline">${pesoIconSvg(13)}${totalRateNum.toLocaleString()}</span>`;
+      const depositRate = `<span class="peso-inline">${pesoIconSvg(12)}${depositNum.toLocaleString()}</span>`;
+      const balanceRate = `<span class="peso-inline">${pesoIconSvg(12)}${balanceNum.toLocaleString()}</span>`;
       const safeMapUrl = sanitizeHttpUrl(b.map_link || b.mapLink || b.map_url || b.mapUrl, '');
       const safeProofUrl = sanitizeHttpUrl(b.proof_url || b.proofUrl, '');
       const fbName = b.fb_name || b.fbName;
       const deliveryTime = b.delivery_time || b.deliveryTime || '';
       const refNo = b.reference_no || b.referenceNo || '';
+      const payChannel = b.payment_channel || b.paymentChannel || 'GCash';
+      const submittedAt = b.created_at
+        ? new Date(b.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+        : '';
 
       const safeId = escapeHtml(b.id || '');
       const safeDate = escapeHtml(b.date || '');
@@ -962,9 +974,23 @@ function renderFilteredBookingsList() {
           <div class="admin-pkg-badge-strip">
             <span class="admin-pkg-title">${escapeHtml(pkgLabel)}</span>
             <span class="admin-rate-tag">Rate: ${pkgRate}</span>
-            ${refNo ? `<span class="admin-rate-tag">Deposit Ref: #${escapeHtml(refNo)}</span>` : ''}
-            ${safeProofUrl ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="admin-pin-pill">View Proof ↗</a>` : ''}
+            <span class="admin-rate-tag">Deposit: ${depositRate} (${escapeHtml(payChannel)})</span>
+            <span class="admin-rate-tag">Balance: ${balanceRate}</span>
+            ${refNo ? `<span class="admin-rate-tag">Ref: #${escapeHtml(refNo)}</span>` : ''}
+            ${submittedAt ? `<span class="admin-rate-tag">Submitted: ${escapeHtml(submittedAt)}</span>` : ''}
           </div>
+
+          ${
+            safeProofUrl
+              ? `<a href="${escapeHtml(safeProofUrl)}" target="_blank" rel="noopener noreferrer" class="admin-proof-preview-card" title="Open full-size payment proof">
+                   <img src="${escapeHtml(safeProofUrl)}" alt="GCash Proof #${safeId}" loading="lazy">
+                   <div class="admin-proof-preview-meta">
+                     <strong>GCash Payment Proof Attached</strong>
+                     <span>${refNo ? `Ref #${escapeHtml(refNo)} &bull; ` : ''}Click to open full image ↗</span>
+                   </div>
+                 </a>`
+              : `<div class="admin-proof-missing-note">No payment screenshot attached (submitted before proof upload or offline)</div>`
+          }
 
           <div class="admin-booking-venue">
             <span>📍 ${escapeHtml(b.address || 'Lapu-Lapu City')}</span>

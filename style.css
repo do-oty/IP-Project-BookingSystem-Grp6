@@ -10376,3 +10376,52 @@ summary:focus-visible,
     grid-template-columns: 1fr;
   }
 }
+
+.admin-proof-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 125, 254, 0.1);
+  border: 1px solid rgba(0, 125, 254, 0.3);
+  text-decoration: none;
+  color: #fff;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.admin-proof-preview-card:hover {
+  border-color: rgba(96, 165, 250, 0.7);
+  background: rgba(0, 125, 254, 0.18);
+}
+
+.admin-proof-preview-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.admin-proof-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-proof-preview-meta strong {
+  font-size: 0.84rem;
+  color: #93c5fd;
+}
+
+.admin-proof-preview-meta span {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-proof-missing-note {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-style: italic;
+}
